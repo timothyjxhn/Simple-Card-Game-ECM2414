@@ -1,52 +1,92 @@
-import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
+// import java.util.concurrent.ArrayBlockingQueue;
+// ArrayLinkedList does not allow for removing random elements. Therefore can not be used to remove only non-preferred cards.
 
-public class Player {
-    private final ArrayBlockingQueue<Card> hand;
-    private final int capacity = 4;
+public class Player implements Runnable {
+    private final String name;
+    private final Card[] hand;
+    private final static int capacity = 4;
     private final int preferredValue;
+    private final CardDeck giveDeck;
+    private final CardDeck takeDeck;
+    private Boolean stopRequested = false; // This could be changed to static if game end is controlled by thread?
 
-    public Player(int preferredValue) {
-        hand = new ArrayBlockingQueue<>(capacity);
-        this.preferredValue = preferredValue;
+    @Override
+    public void run() {
+        while (!stopRequested) {
+            if (isWinningHand()) {
+                // TODO: Win
+                System.out.printf("%s wins%n", name);
+
+                // Chang CardGame win to be true
+                System.out.printf("%s has informed other players that %s has won%n", name, name);
+            } else {
+                // Take card
+                Card takenCard = takeDeck.popCard();
+                System.out.printf("%s draws a %s from %s%n", name, takenCard.toString(), takeDeck.getDeckName()); // e.g. player 1 draws a 2 from deck 4
+
+                // Decide card to give
+                updatePreferredValue();
+                int cardIndex = - 1; // The index to be swapped out
+                for (int i=0; i<hand.length; i++) {
+                    if (!hand[i].equals(takenCard)) { // Not a preferred card:
+                        cardIndex = i;
+                        break;
+                    }
+                }
+
+                Card cardToGive = hand[cardIndex]; 
+                hand[cardIndex] = takenCard;
+                giveDeck.pushCard(cardToGive);
+                System.out.printf("%s discards a %s to %s%n", name, cardToGive.toString(), giveDeck.getDeckName()); // e.g. player 1 discards 3 3 to deck 2
+                System.out.printf("%s current hand is %s%n", name, hand.toString()); // eg.g player 1 current hand is [1, 4, 2, 1]
+            }
+        }
+        // TODO: End game file save
+        System.out.printf("%s exits", name);
+        throw new UnsupportedOperationException("Unimplemented method 'run'");
     }
 
-    public Player(int preferredValue, Card[] cards) {
-        hand = new ArrayBlockingQueue<>(capacity);
+    public void stopThread() {
+        stopRequested = true;
+    }
+
+    public Player(int playerNumber, int preferredValue, Card[] cards, CardDeck giveDeck, CardDeck takeDeck) {
+        this.hand = new Card[capacity];
         this.preferredValue = preferredValue;
-        Collections.addAll(hand, cards);
+
+        this.giveDeck = giveDeck;
+        this.takeDeck = takeDeck;
+        
+        if (playerNumber < 1) {
+            name = "player " + playerNumber;
+        } else {
+            throw new IllegalArgumentException("playerNumber must be > 1");
+        }
+
+        System.out.printf("%s initial hand %s%n", name, hand.toString());
     }
 
     // Returns the number of cards in the hand.
     public int getHandSize() {
-        return hand.size();
+        return hand.length;
     }
 
     public int getPreferredValue() {
         return preferredValue;
     }
 
-    // Adds a card to the hand.
-    // Throws an IllegalStateException if the hand is full.
-    public void pushCard(Card card) {
-        hand.add(card);
+    public void updatePreferredValue() {
+        // TODO
+        throw new UnsupportedOperationException("Unimplemented method");
     }
 
-    // Looks at the first card in the hand without removing it.
-    // Returns null if the hand is empty.
-    public Card peekFirstCard() {
-        return hand.peek();
-    }
-
-    // Retrieves the first card in the hand and removes it from the hand.
-    // Returns null if the hand is empty.
-    public Card popCard() {
-        return hand.poll();
+    public String getName() {
+        return name;
     }
 
     public boolean isWinningHand() {
-        Object[] handArray = hand.toArray();
-        for (int i=0; i<hand.size()-1; i++) {
+        Object[] handArray = hand;
+        for (int i=0; i<hand.length-1; i++) {
             Card card = (Card) handArray[i];
             Card nextCard = (Card) handArray[i+1];
             if (!card.equals(nextCard)) {
