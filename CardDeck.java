@@ -1,15 +1,16 @@
-import java.util.ArrayList;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.LinkedBlockingQueue;
+// This will auto wait for new elements to be added
 
 public class CardDeck {
-    private final ArrayList<Card> deck;
+    // private final LinkedList<Card> deck = new LinkedList<Card>();
+    private final LinkedBlockingQueue<Card> deck = new LinkedBlockingQueue<Card>();
 
-    public CardDeck(ArrayList<Card> startingDeck) {
-        deck = startingDeck;
+    public CardDeck(Card[] startingDeck) {
+        deck.addAll(deck);
     }
 
-    public ArrayList<Card> getDeck() {
-        return deck;
+    public Object[] getDeck() {
+        return deck.toArray();
     }
 
     /**
@@ -17,32 +18,15 @@ public class CardDeck {
      * @param card The card to be added
      */
     public void pushCard(Card card) {
-        synchronized (deck) {
-            deck.add(card);
-            deck.notify();
-        }
+        deck.add(card);
+        // Tells the other player waiting on deck to have elements that it can start
     }
 
     /**
-     * Removes a random card. Thread safe, will wait if deck is empty.
+     * Removes and returns a card. Thread safe, will wait if deck is empty.
      * @return Card
      */
     public Card popCard() {
-        Card card;
-        synchronized (deck) {
-            while (deck.isEmpty()) {
-                try {
-                    deck.wait();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-            int rand = ThreadLocalRandom.current().nextInt(deck.size());
-
-            card = deck.get(rand);
-            deck.remove(rand);
-        }
-
-        return card;
+        return deck.poll();
     }
 }
