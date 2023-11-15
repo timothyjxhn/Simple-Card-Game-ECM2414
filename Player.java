@@ -8,7 +8,7 @@ public class Player implements Runnable {
     private final int preferredValue;
     private final CardDeck giveDeck;
     private final CardDeck takeDeck;
-    private Boolean stopRequested = false; // This could be changed to static if game end is controlled by thread?
+    private volatile Boolean stopRequested = false; // This could be changed to static if game end is controlled by thread?
 
     @Override
     public void run() {
@@ -19,6 +19,7 @@ public class Player implements Runnable {
 
                 // Chang CardGame win to be true
                 System.out.printf("%s has informed other players that %s has won%n", name, name);
+                throw new UnsupportedOperationException("Unimplemented method 'run'");
             } else {
                 // Take card
                 Card takenCard = takeDeck.popCard();
