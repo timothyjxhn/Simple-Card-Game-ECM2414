@@ -4,9 +4,16 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class CardDeck {
     // private final LinkedList<Card> deck = new LinkedList<Card>();
     private final LinkedBlockingQueue<Card> deck = new LinkedBlockingQueue<Card>();
+    private final String deckName;
 
-    public CardDeck(Card[] startingDeck) {
+    public CardDeck(int deckNumber, Card[] startingDeck) {
         deck.addAll(deck);
+
+        if (deckNumber > 1) {
+            deckName = "deck " + deckNumber;
+        } else {
+            throw new IllegalArgumentException("deckNumber must be >1");
+        }
     }
 
     public Object[] getDeck() {
@@ -28,5 +35,9 @@ public class CardDeck {
      */
     public Card popCard() {
         return deck.poll();
+    }
+
+    public String getDeckName() {
+        return deckName;
     }
 }
