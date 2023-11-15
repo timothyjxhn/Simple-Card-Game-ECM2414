@@ -19,7 +19,7 @@ public class Player implements Runnable {
 
                 // Chang CardGame win to be true
                 System.out.printf("%s has informed other players that %s has won%n", name, name);
-                throw new UnsupportedOperationException("Unimplemented method 'run'");
+                throw new UnsupportedOperationException("Unimplemented win");
             } else {
                 // Take card
                 Card takenCard = takeDeck.popCard();
@@ -44,7 +44,7 @@ public class Player implements Runnable {
         }
         // TODO: End game file save
         System.out.printf("%s exits", name);
-        throw new UnsupportedOperationException("Unimplemented method 'run'");
+        throw new UnsupportedOperationException("Unimplemented end");
     }
 
     public void stopThread() {
