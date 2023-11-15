@@ -6,6 +6,11 @@ public record Card(int value) {
     }
 
     @Override
+    public String toString() {
+        return Integer.toString(value);
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (obj instanceof Card) {
             Card other = (Card) obj;
