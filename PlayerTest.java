@@ -3,53 +3,31 @@ import static org.junit.Assert.*;
 
 public class PlayerTest {
 
-    Card[] cardsWin1;
-    Card[] cardsWin2;
-    Card[] cardsLose3;
-    Card[] cards4NotFull;
-    Card[] cards5NotFull;
+    Player player;
+    Card[] cardsWin1 = new Card[] {new Card(1), new Card(1), new Card(1), new Card(1)};
+    Card[] cardsWin2 = new Card[] {new Card(2), new Card(2), new Card(2), new Card(2)};
+    Card[] cardsLose3 = new Card[] {new Card(2), new Card(3), new Card(3), new Card(4)};
+    Card[] cardsLose4 = new Card[] {new Card(3), new Card(3), new Card(1), new Card(1)};
+    Card[] cardsLose5 = new Card[] {new Card(3), new Card(3), new Card(3), new Card(1)};
 
     @Before
-    public void setUp() {
-        cardsWin1 = new Card[] {new Card(1), new Card(1), new Card(1), new Card(1)};
-        cardsWin2 = new Card[] {new Card(2), new Card(2), new Card(2), new Card(2)};
-        cardsLose3 = new Card[] {new Card(2), new Card(3), new Card(5), new Card(4)};
-        cards4NotFull = new Card[] {new Card(4), new Card(4), new Card(4)};
-        cards5NotFull = new Card[] {new Card(5), new Card(5)};
-    }
+    public void setUp() { }
 
     @Test
-    public void testGetHandSize() {
-        Player player = new Player(1, null, null, cards5NotFull);
-        assertEquals(2, player.getHandSize());
-    }
+    public void testSwapCardKeepsPreferred() {
+        Card card;
 
-    @Test
-    public void pushCard() {
-        Player player = new Player(1, null, null, cards4NotFull);
-        Player player2 = new Player(2, null, null);
-        player.pushCard(new Card(2));
-        player2.pushCard(new Card(4));
-        assertEquals(4, player.getHandSize());
-        assertEquals(1, player2.getHandSize());
-    }
+        player = new Player(1, null, null, cardsLose3);
+        card = player.swapCard(new Card(1));
+        assertNotEquals(3, card.value());
 
-    @Test
-    public void pushCardWithFullHand() {
-        Player player = new Player(1, null, null, cardsWin1);
-        try {
-            player.pushCard(new Card(5));
-            fail("Expected IllegalStateException");
-        } catch (IllegalStateException e) {
-            assertTrue(true);
-        }
-    }
+        player = new Player(1, null, null, cardsLose4);
+        card = player.swapCard(new Card(1));
+        assertEquals(3, card.value());
 
-    @Test
-    public void popCard() {
-        Player player = new Player(1, null, null, cardsLose3);
-        assertEquals(3, player.popCard(3).value());
-        assertEquals(3, player.getHandSize());
+        player = new Player(1, null, null, cardsLose5);
+        card = player.swapCard(new Card(1));
+        assertEquals(1, card.value());
     }
 
     @Test
