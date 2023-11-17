@@ -2,12 +2,13 @@
 // ArrayLinkedList does not allow for removing random elements. Therefore can not be used to remove only non-preferred cards.
 
 import java.util.*;
+import java.lang.Math;
 
 public class Player implements Runnable {
     private final String name;
     private final Card[] hand;
     private final static int capacity = 4;
-    private final int preferredValue;
+    private int preferredValue;
     private final CardDeck giveDeck;
     private final CardDeck takeDeck;
     private volatile Boolean stopRequested = false; // This could be changed to static if game end is controlled by thread?
@@ -28,18 +29,8 @@ public class Player implements Runnable {
                 Card takenCard = takeDeck.popCard();
                 System.out.printf("%s draws a %s from %s%n", name, takenCard.toString(), takeDeck.getDeckName()); // e.g. player 1 draws a 2 from deck 4
 
-                // Decide card to give
-                /*
-                int cardIndex = - 1; // The index to be swapped out
-                for (int i=0; i<hand.length; i++) {
-                    if (!hand[i].equals(takenCard)) { // Not a preferred card:
-                        cardIndex = i;
-                        break;
-                    }
-                }
-                */
-
                 Card cardToGive = swapCard(takenCard);
+
                 giveDeck.pushCard(cardToGive);
                 System.out.printf("%s discards a %s to %s%n", name, cardToGive.toString(), giveDeck.getDeckName()); // e.g. player 1 discards 3 3 to deck 2
                 System.out.printf("%s current hand is %s%n", name, Arrays.toString(hand)); // eg.g player 1 current hand is [1, 4, 2, 1]
@@ -55,18 +46,15 @@ public class Player implements Runnable {
     }
 
     public Player(int preferredValue, CardDeck giveDeck, CardDeck takeDeck) {
+        if (preferredValue < 1) {
+            throw new IllegalArgumentException("preferredValue must be > 0");
+        }
         this.hand = new Card[capacity];
         this.preferredValue = preferredValue;
+        name = "player" + preferredValue;
 
         this.giveDeck = giveDeck;
         this.takeDeck = takeDeck;
-
-        // Player number derived from its preferred value
-        if (preferredValue > 0) {
-            name = "player" + preferredValue;
-        } else {
-            throw new IllegalArgumentException("playerNumber must be > 1");
-        }
     }
 
     public Player(int preferredValue, CardDeck giveDeck, CardDeck takeDeck, Card[] startingHand) {
@@ -86,17 +74,35 @@ public class Player implements Runnable {
         return name;
     }
 
-    // Swaps card for best chance at winning hand. Will swap least occurring card.
-    // Removes and retrieves the card that was swapped out.
+    public void printHand() {
+        System.out.println(Arrays.toString(hand));
+    }
+
+    /*
+    Will update preferred card if most occurring card is majority.
+    Order of preference in discarding:
+    1. Non-preferred card occurring least
+    2. Preferred card occurring least
+    3. Non-preferred card occurring most
+     */
+    /**
+     * Swaps card for best chance at winning hand. Will swap least occurring card.
+     * @param card: The card to be swapped in.
+     * @return The card that was swapped out.
+     */
     public Card swapCard(Card card) {
         Card[] tempHand = new Card[capacity + 1];
         System.arraycopy(hand, 0, tempHand, 0, hand.length);
         tempHand[capacity] = card;
 
         LinkedHashMap<Card, Integer> cardMap = sortedHashMap(tempHand);
-        Card cardToDrop = cardMap.keySet().iterator().next();
+        setPrefValIfNeeded(cardMap, (int) Math.ceil((double)tempHand.length/2));
 
-        // TODO: Add case to keep preferred card if there is no majority.
+        Iterator<Card> iterator = cardMap.keySet().iterator();
+        Card cardToDrop;
+        do {
+            cardToDrop = iterator.next();
+        } while (cardToDrop.value() == preferredValue && iterator.hasNext());
 
         for (int i=0; i<hand.length; i++) {
             if (hand[i].equals(cardToDrop)) {
@@ -107,6 +113,11 @@ public class Player implements Runnable {
         return cardToDrop;
     }
 
+    /**
+     * Sorts a HashMap by integer value.
+     * @param hand: Array of cards to be weighed and sorted.
+     * @return A LinkedHashMap sorted by integer value.
+     */
     private LinkedHashMap<Card, Integer> sortedHashMap(Card[] hand) {
         HashMap<Card, Integer> cardMap = new HashMap<>(hand.length);
         for (Card handCard : hand) {
@@ -129,6 +140,18 @@ public class Player implements Runnable {
         }
 
         return sortedMap;
+    }
+
+    /**
+     * Sets preferredValue if most occurring card is majority (more than half of hand).
+     * @param cardMap: A sorted LinkedHashMap of cards and their occurrences.
+     * @param tolerance: The minimum number of occurrences for a card to be considered majority.
+     */
+    private void setPrefValIfNeeded(LinkedHashMap<Card, Integer> cardMap, int tolerance) {
+        Card mostOccurringCard = new LinkedList<>(cardMap.keySet()).descendingIterator().next();
+        if (cardMap.get(mostOccurringCard) >= tolerance && mostOccurringCard.value() != preferredValue) {
+            preferredValue = mostOccurringCard.value();
+        }
     }
 
     public boolean isWinningHand() {
