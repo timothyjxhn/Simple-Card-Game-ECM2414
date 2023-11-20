@@ -33,7 +33,7 @@ public class Player implements Runnable {
 
                 giveDeck.pushCard(cardToGive);
                 System.out.printf("%s discards a %s to %s%n", name, cardToGive.toString(), giveDeck.getDeckName()); // e.g. player 1 discards 3 3 to deck 2
-                System.out.printf("%s current hand is %s%n", name, Arrays.toString(hand)); // eg.g player 1 current hand is [1, 4, 2, 1]
+                System.out.printf("%s current hand is %s%n", name, Arrays.toString(hand)); // e.g. player 1 current hand is [1, 4, 2, 1]
             }
         }
         // TODO: End game file save
@@ -155,11 +155,8 @@ public class Player implements Runnable {
     }
 
     public boolean isWinningHand() {
-        Object[] handArray = hand;
-        for (int i=0; i<hand.length-1; i++) {
-            Card card = (Card) handArray[i];
-            Card nextCard = (Card) handArray[i+1];
-            if (!card.equals(nextCard)) {
+        for (int i=0; i<hand.length-1; i++) {;
+            if (!hand[i].equals(hand[i+1])) {
                 return false;
             }
         }
