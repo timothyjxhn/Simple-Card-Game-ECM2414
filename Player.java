@@ -1,8 +1,6 @@
-// import java.util.concurrent.ArrayBlockingQueue;
-// ArrayLinkedList does not allow for removing random elements. Therefore can not be used to remove only non-preferred cards.
-
 import java.util.*;
 import java.lang.Math;
+import java.io.*;
 
 public class Player implements Runnable {
     private final String name;
@@ -12,49 +10,26 @@ public class Player implements Runnable {
     private final CardDeck giveDeck;
     private final CardDeck takeDeck;
     private volatile Boolean stopRequested = false; // This could be changed to static if game end is controlled by thread?
-
-    @Override
-    public void run() {
-        while (!stopRequested) {
-            if (isWinningHand()) {
-                // TODO: Win
-                System.out.printf("%s wins%n", name);
-
-                // Chang CardGame win to be true
-                System.out.printf("%s has informed other players that %s has won%n", name, name);
-                throw new UnsupportedOperationException("Unimplemented win");
-            }
-            else {
-                // Take card
-                Card takenCard = takeDeck.popCard();
-                System.out.printf("%s draws a %s from %s%n", name, takenCard.toString(), takeDeck.getDeckName()); // e.g. player 1 draws a 2 from deck 4
-
-                Card cardToGive = swapCard(takenCard);
-
-                giveDeck.pushCard(cardToGive);
-                System.out.printf("%s discards a %s to %s%n", name, cardToGive.toString(), giveDeck.getDeckName()); // e.g. player 1 discards 3 3 to deck 2
-                System.out.printf("%s current hand is %s%n", name, Arrays.toString(hand)); // e.g. player 1 current hand is [1, 4, 2, 1]
-            }
-        }
-        // TODO: End game file save
-        System.out.printf("%s exits", name);
-        throw new UnsupportedOperationException("Unimplemented end");
-    }
-
-    public void stopThread() {
-        stopRequested = true;
-    }
+    private final FileWriter fileWriter;
 
     public Player(int preferredValue, CardDeck giveDeck, CardDeck takeDeck) {
         if (preferredValue < 1) {
             throw new IllegalArgumentException("preferredValue must be > 0");
         }
+
         this.hand = new Card[capacity];
         this.preferredValue = preferredValue;
-        name = "player" + preferredValue;
+        name = "player" + preferredValue; // name is related to initial preferredValue
 
         this.giveDeck = giveDeck;
         this.takeDeck = takeDeck;
+
+        try {
+            fileWriter = new FileWriter(String.format("player%d_output.txt", preferredValue));
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public Player(int preferredValue, CardDeck giveDeck, CardDeck takeDeck, Card[] startingHand) {
@@ -63,7 +38,44 @@ public class Player implements Runnable {
             throw new IllegalArgumentException("startingHand must be or less than " + capacity);
         }
         System.arraycopy(startingHand, 0, hand, 0, startingHand.length);
-        System.out.printf("%s initial hand %s\n", name, Arrays.toString(hand));
+        printToFile(String.format("%s initial hand %s%n", name, Arrays.toString(hand)));
+    }
+
+    @Override
+    public void run() {
+        while (!stopRequested) {
+            if (isWinningHand()) {
+                // TODO: Win
+                String win = String.format("%s wins%n", name);
+                printToFile(win);
+                System.out.println(win);
+
+                // Chang CardGame win to be true
+                // System.out.printf("%s has informed other players that %s has won%n", name, name);
+                throw new UnsupportedOperationException("Unimplemented win");
+            }
+            else {
+                // Take card
+                Card takenCard = takeDeck.popCard();
+                printToFile(String.format("%s draws a %s from %s%n", name, takenCard.toString(), takeDeck.getDeckName())); // e.g. player 1 draws a 2 from deck 4
+
+                Card cardToGive = swapCard(takenCard);
+                giveDeck.pushCard(cardToGive);
+                printToFile(String.format("%s discards a %s to %s%n", name, cardToGive.toString(), giveDeck.getDeckName())); // e.g. player 1 discards 3 3 to deck 2
+                printToFile(String.format("%s current hand is %s%n", name, Arrays.toString(hand))); // e.g. player 1 current hand is [1, 4, 2, 1]
+            }
+        }
+
+        printToFile(String.format("%s exits%n", name));
+        try {
+            fileWriter.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void stopThread() {
+        stopRequested = true;
     }
 
     public int getPreferredValue() {
@@ -74,8 +86,12 @@ public class Player implements Runnable {
         return name;
     }
 
-    public void printHand() {
-        System.out.println(Arrays.toString(hand));
+    private void printToFile(String s) {
+        try {
+            fileWriter.write(s);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /*
@@ -155,7 +171,7 @@ public class Player implements Runnable {
     }
 
     public boolean isWinningHand() {
-        for (int i=0; i<hand.length-1; i++) {;
+        for (int i=0; i<hand.length-1; i++) {
             if (!hand[i].equals(hand[i+1])) {
                 return false;
             }

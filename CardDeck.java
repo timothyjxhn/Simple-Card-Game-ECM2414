@@ -1,18 +1,31 @@
+import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.io.*;
 // This will auto wait for new elements to be added
 
 public class CardDeck {
-    // private final LinkedList<Card> deck = new LinkedList<Card>();
-    private final LinkedBlockingQueue<Card> deck = new LinkedBlockingQueue<Card>();
+
+    private final LinkedBlockingQueue<Card> deck = new LinkedBlockingQueue<>();
     private final String deckName;
 
     public CardDeck(int deckNumber, Card[] startingDeck) {
-        deck.addAll(deck);
+        deck.addAll(List.of(startingDeck));
 
-        if (deckNumber > 1) {
-            deckName = "deck " + deckNumber;
+        if (deckNumber > 0) {
+            deckName = "deck" + deckNumber;
         } else {
             throw new IllegalArgumentException("deckNumber must be >1");
+        }
+    }
+
+    private void printStateToFile() {
+        try {
+            FileWriter fileWriter = new FileWriter(String.format("%s_output.txt", deckName));
+            fileWriter.write(String.format("%s contents: %s%n", deckName, deck));
+            fileWriter.close();
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -26,7 +39,6 @@ public class CardDeck {
      */
     public void pushCard(Card card) {
         deck.add(card);
-        // Tells the other player waiting on deck to have elements that it can start
     }
 
     /**
@@ -34,7 +46,10 @@ public class CardDeck {
      * @return Card
      */
     public Card popCard() {
-        return deck.poll();
+        try {
+            return deck.take();
+        } catch (InterruptedException ignored) { }
+        return null;
     }
 
     public String getDeckName() {
