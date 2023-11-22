@@ -59,6 +59,7 @@ public class Player implements Runnable {
                     System.out.print(win);
                     printToFile(win);
                 }
+                    break;
             } else {
                 // Take card
                 try {
@@ -78,6 +79,7 @@ public class Player implements Runnable {
                     if (Thread.currentThread().isInterrupted()) {
                         System.out.println(name + " got interrupted while waiting to take a card\n" + e);
                     }
+                    break;
                 }
             }
         }

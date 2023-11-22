@@ -53,8 +53,8 @@ public class CardDeck {
      * Adds a card to the deck. Thread safe.
      * @param card The card to be added
      */
-    public void pushCard(Card card) {
-        deck.add(card);
+    public void pushCard(Card card) throws InterruptedException {
+        deck.put(card);
     }
 
     /**

@@ -15,9 +15,10 @@ public class CardGame {
     private final static ArrayList<Player> players = new ArrayList<Player>();
     private final static ArrayList<CardDeck> decks = new ArrayList<CardDeck>();
     private final static ArrayList<Thread> playerThreads = new ArrayList<Thread>();
+    private static Integer playerCount = 4;
 
     public static void main(String[] args) {
-        Integer playerCount = 4;
+        // Integer playerCount = 4;
         ArrayList<Card> deck; // NOTE: deck and decks. completeDeck may have been better
 
         // Getting user input
@@ -173,7 +174,7 @@ public class CardGame {
 
     public static Boolean endGame(Player winningPlayer) {
         if (winnerSelected.compareAndSet(false, true)) { // Only one player can use this at a time
-            for (int i = 0; i <= playerThreads.size()-1; i++) {
+            for (int i = 0; i <= players.size()-1; i++) {
 
                 Player player = players.get(i);
                 playerThreads.get(i).interrupt();
