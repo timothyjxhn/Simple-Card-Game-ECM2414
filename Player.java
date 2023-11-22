@@ -9,7 +9,7 @@ public class Player implements Runnable {
     private int preferredValue;
     private final CardDeck giveDeck;
     private final CardDeck takeDeck;
-    private volatile Boolean stopRequested = false; // This could be changed to static if game end is controlled by thread?
+                                                    // thread?
     private final FileWriter fileWriter;
 
     public Player(int preferredValue, CardDeck giveDeck, CardDeck takeDeck) {
@@ -26,8 +26,7 @@ public class Player implements Runnable {
 
         try {
             fileWriter = new FileWriter(String.format("player%d_output.txt", preferredValue));
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -43,40 +42,53 @@ public class Player implements Runnable {
 
     @Override
     public void run() {
-        System.out.printf("%s has started with a hand of %s %n", name, hand);
-        while (!stopRequested) {
+        System.out.printf("%s has started with a hand of %s %n", name, Arrays.toString(hand));
+        while (!Thread.currentThread().isInterrupted()) { // !stopRequested
             if (isWinningHand()) {
                 String win = String.format("%s has won%n", name);
                 printToFile(win);
                 System.out.println(win);
 
                 // Chang CardGame win to be true
-                CardGame.endGame(this);
-                // System.out.printf("%s has informed other players that %s has won%n", name, name);
-                throw new UnsupportedOperationException("Unimplemented win");
-            }
-            else {
+                if (CardGame.endGame(this)) {
+                    win = String.format("%s has been accepted as the winner%n", name);
+                    printToFile(win);
+                    System.out.print(win);
+                } else {
+                    win = String.format("%s attempted to win but a winner had already been chosen%n", name);
+                    System.out.print(win);
+                    printToFile(win);
+                }
+            } else {
                 // Take card
-                Card takenCard = takeDeck.popCard();
-                printToFile(String.format("%s draws a %s from %s%n", name, takenCard.toString(), takeDeck.getDeckName())); // e.g. player 1 draws a 2 from deck 4
+                try {
+                    Card takenCard = takeDeck.popCard();
+                    printToFile(String.format("%s draws a %s from %s%n", name, takenCard.toString(),
+                            takeDeck.getDeckName())); // e.g. player 1 draws a 2 from deck 4
 
-                Card cardToGive = swapCard(takenCard);
-                giveDeck.pushCard(cardToGive);
-                printToFile(String.format("%s discards a %s to %s%n", name, cardToGive.toString(), giveDeck.getDeckName())); // e.g. player 1 discards 3 3 to deck 2
-                printToFile(String.format("%s current hand is %s%n", name, Arrays.toString(hand))); // e.g. player 1 current hand is [1, 4, 2, 1]
+                    Card cardToGive = swapCard(takenCard);
+                    giveDeck.pushCard(cardToGive);
+                    printToFile(String.format("%s discards a %s to %s%n", name, cardToGive.toString(),
+                            giveDeck.getDeckName())); // e.g. player 1 discards 3 3 to deck 2
+                    printToFile(String.format("%s current hand is %s%n", name, Arrays.toString(hand))); // e.g. player 1
+                                                                                                        // current hand
+                                                                                                        // is [1, 4, 2,
+                                                                                                        // 1]
+                } catch (InterruptedException e) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        System.out.println(name + " got interrupted while waiting to take a card\n" + e);
+                    }
+                }
             }
         }
 
         printToFile(String.format("%s exits%n", name));
+        System.out.printf("%s exits%n", name);
         try {
             fileWriter.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public void stopThread() {
-        stopRequested = true;
     }
 
     public int getPreferredValue() {
@@ -96,14 +108,15 @@ public class Player implements Runnable {
     }
 
     /*
-    Will update preferred card if most occurring card is majority.
-    Order of preference in discarding:
-    1. Non-preferred card occurring least
-    2. Preferred card occurring least
-    3. Non-preferred card occurring most
+     * Will update preferred card if most occurring card is majority.
+     * Order of preference in discarding:
+     * 1. Non-preferred card occurring least
+     * 2. Preferred card occurring least
+     * 3. Non-preferred card occurring most
      */
     /**
      * Swaps card for best chance at winning hand. Will swap least occurring card.
+     * 
      * @param card: The card to be swapped in.
      * @return The card that was swapped out.
      */
@@ -113,7 +126,7 @@ public class Player implements Runnable {
         tempHand[capacity] = card;
 
         LinkedHashMap<Card, Integer> cardMap = sortedHashMap(tempHand);
-        setPrefValIfNeeded(cardMap, (int) Math.ceil((double)tempHand.length/2));
+        setPrefValIfNeeded(cardMap, (int) Math.ceil((double) tempHand.length / 2));
 
         Iterator<Card> iterator = cardMap.keySet().iterator();
         Card cardToDrop;
@@ -121,7 +134,7 @@ public class Player implements Runnable {
             cardToDrop = iterator.next();
         } while (cardToDrop.value() == preferredValue && iterator.hasNext());
 
-        for (int i=0; i<hand.length; i++) {
+        for (int i = 0; i < hand.length; i++) {
             if (hand[i].equals(cardToDrop)) {
                 hand[i] = card;
                 break;
@@ -132,6 +145,7 @@ public class Player implements Runnable {
 
     /**
      * Sorts a HashMap by integer value.
+     * 
      * @param hand: Array of cards to be weighed and sorted.
      * @return A LinkedHashMap sorted by integer value.
      */
@@ -160,9 +174,12 @@ public class Player implements Runnable {
     }
 
     /**
-     * Sets preferredValue if most occurring card is majority (more than half of hand).
-     * @param cardMap: A sorted LinkedHashMap of cards and their occurrences.
-     * @param tolerance: The minimum number of occurrences for a card to be considered majority.
+     * Sets preferredValue if most occurring card is majority (more than half of
+     * hand).
+     * 
+     * @param cardMap:   A sorted LinkedHashMap of cards and their occurrences.
+     * @param tolerance: The minimum number of occurrences for a card to be
+     *                   considered majority.
      */
     private void setPrefValIfNeeded(LinkedHashMap<Card, Integer> cardMap, int tolerance) {
         Card mostOccurringCard = new LinkedList<>(cardMap.keySet()).descendingIterator().next();
@@ -172,8 +189,8 @@ public class Player implements Runnable {
     }
 
     public boolean isWinningHand() {
-        for (int i=0; i<hand.length-1; i++) {
-            if (!hand[i].equals(hand[i+1])) {
+        for (int i = 0; i < hand.length - 1; i++) {
+            if (!hand[i].equals(hand[i + 1])) {
                 return false;
             }
         }

@@ -14,6 +14,7 @@ public class CardGame {
     private final static AtomicBoolean winnerSelected = new AtomicBoolean(false);
     private final static ArrayList<Player> players = new ArrayList<Player>();
     private final static ArrayList<CardDeck> decks = new ArrayList<CardDeck>();
+    private final static ArrayList<Thread> playerThreads = new ArrayList<Thread>();
 
     public static void main(String[] args) {
         Integer playerCount = 4;
@@ -89,16 +90,19 @@ public class CardGame {
             if (playerCount.equals(player_i)) { // Last player loops around
                 Card[] startingHand = {deck.get(cardIndex), deck.get(cardIndex+1), deck.get(cardIndex+2), deck.get(cardIndex+3)};
                 players.add(new Player(player_i, decks.getLast(), decks.getFirst(), startingHand));
+                playerThreads.add(new Thread(players.getLast(), players.getLast().getName())); 
+                // ^ Adds players to threads. This is seperate from players so that .getName() can be accessed in the end
             } else { // All other players
                 Card[] startingHand = {deck.get(cardIndex), deck.get(cardIndex+1), deck.get(cardIndex+2), deck.get(cardIndex+3)};
                 players.add(new Player(player_i, decks.get(player_i-1), decks.get(player_i), startingHand));
+                playerThreads.add(new Thread(players.getLast(), players.getLast().getName()));
             }
             cardIndex += 4;
         }
 
 
         // I could start the players above but i think that is asking for problems
-        for (Player player : players) {
+        for (Thread player : playerThreads) {
             player.start();
         }
     }
@@ -167,10 +171,13 @@ public class CardGame {
         }
     }
 
-    public static void endGame(Player winningPlayer) {
+    public static Boolean endGame(Player winningPlayer) {
         if (winnerSelected.compareAndSet(false, true)) { // Only one player can use this at a time
-            for (Player player : players) {
-                player.stopThread();
+            for (int i = 0; i <= playerThreads.size()-1; i++) {
+
+                Player player = players.get(i);
+                playerThreads.get(i).interrupt();
+
                 if (!player.equals(winningPlayer)) {
                     System.out.printf("%s has informed %s that %s has won%n", winningPlayer.getName(), player.getName(), winningPlayer.getName());
                 }
@@ -180,9 +187,10 @@ public class CardGame {
                 deck.endDeck(); // Saves states to file and outputs contents
             }
 
-            System.out.println(winningPlayer.getName() + " has won!");
+            return true;
+
         } else {
-            System.out.println(winningPlayer.getName() + " attempted to win but a winner has already been chosen.");
+            return false;
         }
     }
 }

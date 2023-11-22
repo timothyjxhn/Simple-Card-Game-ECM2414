@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.io.*;
@@ -11,6 +12,7 @@ public class CardDeck {
     public CardDeck(int deckNumber) {
         if (deckNumber > 0) {
             deckName = "deck" + deckNumber;
+            System.out.println(deckName + " initial contents: " + Arrays.toString(deck.toArray()));
         } else {
             throw new IllegalArgumentException("deckNumber must be >=1");
         }
@@ -21,6 +23,7 @@ public class CardDeck {
 
         if (deckNumber > 0) {
             deckName = "deck" + deckNumber;
+            System.out.println(deckName + " initial contents: " + Arrays.toString(deck.toArray()));
         } else {
             throw new IllegalArgumentException("deckNumber must be >=1");
         }
@@ -28,7 +31,7 @@ public class CardDeck {
 
     public void endDeck() {
         printStateToFile();
-        System.out.println(deckName + " contents: " + deck.toArray().toString());
+        System.out.println(deckName + " contents: " + Arrays.toString(deck.toArray()));
     }
 
     private void printStateToFile() {
@@ -58,11 +61,9 @@ public class CardDeck {
      * Removes and returns a card. Thread safe, will wait if deck is empty.
      * @return Card
      */
-    public Card popCard() {
-        try {
-            return deck.take();
-        } catch (InterruptedException ignored) { }
-        return null;
+    public Card popCard() throws InterruptedException {
+        return deck.take();
+        // return null;
     }
 
     public String getDeckName() {
