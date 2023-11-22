@@ -43,14 +43,15 @@ public class Player implements Runnable {
 
     @Override
     public void run() {
+        System.out.printf("%s has started with a hand of %s %n", name, hand);
         while (!stopRequested) {
             if (isWinningHand()) {
-                // TODO: Win
-                String win = String.format("%s wins%n", name);
+                String win = String.format("%s has won%n", name);
                 printToFile(win);
                 System.out.println(win);
 
                 // Chang CardGame win to be true
+                CardGame.endGame(this);
                 // System.out.printf("%s has informed other players that %s has won%n", name, name);
                 throw new UnsupportedOperationException("Unimplemented win");
             }

@@ -26,6 +26,11 @@ public class CardDeck {
         }
     }
 
+    public void endDeck() {
+        printStateToFile();
+        System.out.println(deckName + " contents: " + deck.toArray().toString());
+    }
+
     private void printStateToFile() {
         try {
             FileWriter fileWriter = new FileWriter(String.format("%s_output.txt", deckName));

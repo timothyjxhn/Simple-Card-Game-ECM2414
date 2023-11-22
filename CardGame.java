@@ -17,9 +17,10 @@ public class CardGame {
 
     public static void main(String[] args) {
         Integer playerCount = 4;
-        ArrayList<Card> deck;
+        ArrayList<Card> deck; // NOTE: deck and decks. completeDeck may have been better
 
         // Getting user input
+        // I recomend just collapsing this in editor
         try (Scanner scanner = new Scanner(System.in)) {
             System.out.println("Input nothing for defaults");
 
@@ -46,6 +47,7 @@ public class CardGame {
                 }
             }
 
+            // Get card deck
             while (true) {
                 System.out.print("\nEnter the card deck path (generate):\n");
                 String input = scanner.nextLine();
@@ -53,9 +55,7 @@ public class CardGame {
                 if (input.isEmpty()) {
                     System.out.println("The card deck will be generated");
 
-                    // TODO: generate it
                     deck = generateCardDeck(playerCount);
-
                     break;
                 }
 
@@ -75,33 +75,32 @@ public class CardGame {
 
         Collections.shuffle(deck);
 
-        // Generate decks
+        // Generate decks and distribute cards
         int cardIndex = 0;
         for (int deck_i = 1; deck_i <= playerCount; deck_i++) {
             Card[] startingDeck = {deck.get(cardIndex), deck.get(cardIndex+1), deck.get(cardIndex+2), deck.get(cardIndex+3)};
+            // You can not put Card[] directy into a method for some reason. Hence ^
             decks.add(new CardDeck(deck_i, startingDeck));
             cardIndex += 4;
         }
 
-        // Generate players
+        // Generate players and distribute cards
         for (int player_i = 1; player_i <= playerCount; player_i++) {
             if (playerCount.equals(player_i)) { // Last player loops around
                 Card[] startingHand = {deck.get(cardIndex), deck.get(cardIndex+1), deck.get(cardIndex+2), deck.get(cardIndex+3)};
                 players.add(new Player(player_i, decks.getLast(), decks.getFirst(), startingHand));
-            } else {
+            } else { // All other players
                 Card[] startingHand = {deck.get(cardIndex), deck.get(cardIndex+1), deck.get(cardIndex+2), deck.get(cardIndex+3)};
                 players.add(new Player(player_i, decks.get(player_i-1), decks.get(player_i), startingHand));
             }
-            // deck.getLast()
             cardIndex += 4;
         }
 
 
-        System.out.println(playerCount);
-        System.out.println(deck.size());
-        System.out.println(deck);
-        System.out.println(players);
-        System.out.println(decks);
+        // I could start the players above but i think that is asking for problems
+        for (Player player : players) {
+            player.start();
+        }
     }
 
     private static ArrayList<Card> generateCardDeck(int playerCount) {
@@ -168,11 +167,22 @@ public class CardGame {
         }
     }
 
-    public static void endGame() {
-        if (winnerSelected.compareAndSet(false, true)) {
+    public static void endGame(Player winningPlayer) {
+        if (winnerSelected.compareAndSet(false, true)) { // Only one player can use this at a time
+            for (Player player : players) {
+                player.stopThread();
+                if (!player.equals(winningPlayer)) {
+                    System.out.printf("%s has informed %s that %s has won%n", winningPlayer.getName(), player.getName(), winningPlayer.getName());
+                }
+            }
 
+            for (CardDeck deck : decks) {
+                deck.endDeck(); // Saves states to file and outputs contents
+            }
+
+            System.out.println(winningPlayer.getName() + " has won!");
         } else {
-            System.out.println("Thread has already been selected as winner");
+            System.out.println(winningPlayer.getName() + " attempted to win but a winner has already been chosen.");
         }
     }
 }
