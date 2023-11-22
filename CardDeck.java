@@ -8,13 +8,21 @@ public class CardDeck {
     private final LinkedBlockingQueue<Card> deck = new LinkedBlockingQueue<>();
     private final String deckName;
 
+    public CardDeck(int deckNumber) {
+        if (deckNumber > 0) {
+            deckName = "deck" + deckNumber;
+        } else {
+            throw new IllegalArgumentException("deckNumber must be >=1");
+        }
+    }
+
     public CardDeck(int deckNumber, Card[] startingDeck) {
         deck.addAll(List.of(startingDeck));
 
         if (deckNumber > 0) {
             deckName = "deck" + deckNumber;
         } else {
-            throw new IllegalArgumentException("deckNumber must be >1");
+            throw new IllegalArgumentException("deckNumber must be >=1");
         }
     }
 

@@ -4,6 +4,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -11,7 +12,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CardGame {
     private final static AtomicBoolean winnerSelected = new AtomicBoolean(false);
-    // private final static ArrayList<Player> players;
+    private final static ArrayList<Player> players = new ArrayList<Player>();
+    private final static ArrayList<CardDeck> decks = new ArrayList<CardDeck>();
 
     public static void main(String[] args) {
         Integer playerCount = 4;
@@ -71,13 +73,41 @@ public class CardGame {
             }
         }
 
+        Collections.shuffle(deck);
+
+        // Generate decks
+        int cardIndex = 0;
+        for (int deck_i = 1; deck_i <= playerCount; deck_i++) {
+            Card[] startingDeck = {deck.get(cardIndex), deck.get(cardIndex+1), deck.get(cardIndex+2), deck.get(cardIndex+3)};
+            decks.add(new CardDeck(deck_i, startingDeck));
+            cardIndex += 4;
+        }
+
+        // Generate players
+        for (int player_i = 1; player_i <= playerCount; player_i++) {
+            if (playerCount.equals(player_i)) { // Last player loops around
+                Card[] startingHand = {deck.get(cardIndex), deck.get(cardIndex+1), deck.get(cardIndex+2), deck.get(cardIndex+3)};
+                players.add(new Player(player_i, decks.getLast(), decks.getFirst(), startingHand));
+            } else {
+                Card[] startingHand = {deck.get(cardIndex), deck.get(cardIndex+1), deck.get(cardIndex+2), deck.get(cardIndex+3)};
+                players.add(new Player(player_i, decks.get(player_i-1), decks.get(player_i), startingHand));
+            }
+            // deck.getLast()
+            cardIndex += 4;
+        }
+
+
         System.out.println(playerCount);
         System.out.println(deck.size());
+        System.out.println(deck);
+        System.out.println(players);
+        System.out.println(decks);
     }
 
     private static ArrayList<Card> generateCardDeck(int playerCount) {
         return generateCardDeck("./generated-deck.txt", playerCount);
     }
+
     private static ArrayList<Card> generateCardDeck(String generatedFilePath, int playerCount) {
         try (FileWriter fileWriter = new FileWriter(generatedFilePath)) {
             ArrayList<Card> deck = new ArrayList<Card>();
