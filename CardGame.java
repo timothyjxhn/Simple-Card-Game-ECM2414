@@ -1,9 +1,8 @@
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,25 +50,20 @@ public class CardGame {
 
                 if (input.isEmpty()) {
                     System.out.println("The card deck will be generated");
-                    // generate it
-                    deck = new ArrayList<Card>();
-                    deck.add(new Card(0));
+
+                    // TODO: generate it
+                    deck = generateCardDeck(playerCount);
+
                     break;
                 }
 
                 try {
-                    // Path filePath = Paths.get(input);
-                    // if (filePath.isAbsolute() && filePath.toFile().exists()) {
-                    // break;
-                    // } else {
-                    // System.out.println("\nInvalid input. Perhaps try the full file path?");
-                    // }
                     deck = cardDeckFromFile(input, playerCount);
                     break;
 
                 } catch (FileNotFoundException e) {
                     System.out.println("\nInvalid input. The file could not be found:\n" + e);
-                } catch(FileNotDeckException e) {
+                } catch (FileNotDeckException e) {
                     System.out.println("\nInvalid input. The file was an invalid deck:\n" + e);
                 } catch (IOException e) {
                     System.out.println("\nInvalid input.\n" + e);
@@ -79,15 +73,27 @@ public class CardGame {
 
         System.out.println(playerCount);
         System.out.println(deck.size());
-
-        // String userPlayerInput = user.nextLine();
-        // while (!isInt(userPlayerInput)) {
-        // }
     }
 
-    // for (int i = 1; i<=playerCount; i++) {
-    // players.add(new Player(i, null, null));
-    // }
+    private static ArrayList<Card> generateCardDeck(int playerCount) {
+        return generateCardDeck("./generated-deck.txt", playerCount);
+    }
+    private static ArrayList<Card> generateCardDeck(String generatedFilePath, int playerCount) {
+        try (FileWriter fileWriter = new FileWriter(generatedFilePath)) {
+            ArrayList<Card> deck = new ArrayList<Card>();
+            for (int face = 1; face <= (2 * playerCount); face++) { // 4 decks + 4 players (2*playercount), each with 4
+                                                                    // cards.
+                for (int card = 1; card <= 4; card++) {
+                    // System.out.println(card + " of face " + face);
+                    fileWriter.write(Integer.toString(face) + "\n");
+                    deck.add(new Card(face));
+                }
+            }
+            return deck;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private static ArrayList<Card> cardDeckFromFile(String path, Integer playerCount)
             throws FileNotFoundException, FileNotDeckException, IOException {
@@ -109,17 +115,19 @@ public class CardGame {
 
                 } catch (NumberFormatException e) {
                     throw new FileNotDeckException(
-                            "Error in "+ path + " on line " + lineCount + ". Line is not an integer");
+                            "Error in " + path + " on line " + lineCount + ". Line is not an integer");
                 }
             }
 
             if (lineCount < (8 * playerCount)) { // 8n rows is required
-                throw new FileNotDeckException("Not enough lines for provided playerCount in " + path + ". The required is >=" + 8*playerCount + " provided waws " + cards.size());
+                throw new FileNotDeckException("Not enough lines for provided playerCount in " + path
+                        + ". The required is >=" + 8 * playerCount + " provided was " + lineCount);
             } else {
                 // Check that each card face has over 4 cards associated with it
                 for (Map.Entry<Integer, Integer> card : cards.entrySet()) {
                     if (card.getValue() < 4) {
-                        throw new FileNotDeckException("Card " + card.getKey() + " only has " + card.getValue() + " cards in "+ path +", requires 4.");
+                        throw new FileNotDeckException("Card " + card.getKey() + " only has " + card.getValue()
+                                + " cards in " + path + ", requires 4.");
                     }
                 }
 
