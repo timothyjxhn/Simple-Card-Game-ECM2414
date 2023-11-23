@@ -12,6 +12,12 @@ public class Player implements Runnable {
                                                     // thread?
     private final FileWriter fileWriter;
 
+    /**
+     * Constructor for Player. Note: when using this you need to later privide a starting deck for it to be run().
+     * @param preferredValue int for an initial preferred value.
+     * @param giveDeck A CardDeck that cards will be given too.
+     * @param takeDeck CardDeck that cards will be taken from.
+     */
     public Player(int preferredValue, CardDeck giveDeck, CardDeck takeDeck) {
         if (preferredValue < 1) {
             throw new IllegalArgumentException("preferredValue must be > 0");
@@ -31,6 +37,13 @@ public class Player implements Runnable {
         }
     }
 
+    /**
+     * Constructor for Player.
+     * @param preferredValue int for an initial preferred value.
+     * @param giveDeck A CardDeck that cards will be given too.
+     * @param takeDeck CardDeck that cards will be taken from.
+     * @param startingHand An array of Card[] that will be used as the starting hand.
+     */
     public Player(int preferredValue, CardDeck giveDeck, CardDeck takeDeck, Card[] startingHand) {
         this(preferredValue, giveDeck, takeDeck);
         if (startingHand.length > capacity) {
@@ -93,14 +106,24 @@ public class Player implements Runnable {
         }
     }
 
+    /**
+     * @return int, The current preferred value
+     */
     public int getPreferredValue() {
         return preferredValue;
     }
 
+    /**
+     * @return String, the current name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Print `s` to the file defined in `private final fileWriter`.
+     * @param s String to be writed.
+     */
     private void printToFile(String s) {
         try {
             fileWriter.write(s);

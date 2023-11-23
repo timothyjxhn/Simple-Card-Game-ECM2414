@@ -77,7 +77,7 @@ public class CardGame {
 
         Collections.shuffle(deck);
 
-        // Generate decks and distribute cards
+        // Generate decks and distribute cards to them
         int cardIndex = 0;
         for (int deck_i = 1; deck_i <= playerCount; deck_i++) {
             Card[] startingDeck = {deck.get(cardIndex), deck.get(cardIndex+1), deck.get(cardIndex+2), deck.get(cardIndex+3)};
@@ -102,16 +102,28 @@ public class CardGame {
         }
 
 
-        // I could start the players above but i think that is asking for problems
+        // This could be inserted above but the distance in start times could 
+        // lead to some decks being significantly larger.
         for (Thread player : playerThreads) {
             player.start();
         }
     }
 
+    /**
+     * Generates a deck for playerCount. Generated deck is put in ./generated-deck.txt
+     * @param playerCount
+     * @return An ArrayList of Cards.
+     */
     private static ArrayList<Card> generateCardDeck(int playerCount) {
         return generateCardDeck("./generated-deck.txt", playerCount);
     }
 
+    /**
+     * Generates a deck for provided playerCount, saves it in generatidFilePath.
+     * @param generatedFilePath
+     * @param playerCount
+     * @return An ArrayList of Cards, the deck.
+     */
     private static ArrayList<Card> generateCardDeck(String generatedFilePath, int playerCount) {
         try (FileWriter fileWriter = new FileWriter(generatedFilePath)) {
             ArrayList<Card> deck = new ArrayList<Card>();
@@ -129,6 +141,16 @@ public class CardGame {
         }
     }
 
+    /**
+     * Looks for a valid deck file at `path` for provided `playerCount`. 
+     * Will error if invalid or not present.
+     * @param path
+     * @param playerCount
+     * @return ArrayList of Cards, the deck.
+     * @throws FileNotFoundException
+     * @throws FileNotDeckException The provided file was not a valid deck (for provided playerCount).
+     * @throws IOException
+     */
     private static ArrayList<Card> cardDeckFromFile(String path, Integer playerCount)
             throws FileNotFoundException, FileNotDeckException, IOException {
         try (BufferedReader reader = new BufferedReader(new FileReader(path))) { // The try will close reader
@@ -172,6 +194,11 @@ public class CardGame {
         }
     }
 
+    /**
+     * Notifies all players of game end. Returns `true` if `winningPlayer` is the first/actual winner.
+     * @param winningPlayer
+     * @return Boolean if `winningPlayer` is the firs winner.
+     */
     public static Boolean endGame(Player winningPlayer) {
         if (winnerSelected.compareAndSet(false, true)) { // Only one player can use this at a time
             for (int i = 0; i <= players.size()-1; i++) {
@@ -197,6 +224,10 @@ public class CardGame {
 }
 
 class FileNotDeckException extends Exception {
+    /**
+     * Custom error constructor for invalid deck files.
+     * @param message
+     */
     public FileNotDeckException(String message) {
         super(message);
     }

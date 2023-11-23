@@ -9,6 +9,11 @@ public class CardDeck {
     private final LinkedBlockingQueue<Card> deck = new LinkedBlockingQueue<>();
     private final String deckName;
 
+    /**
+     * Constructor for deckNumber. 
+     * Note: you will do not NEED to provide startingDeck.
+     * @param deckNumber the number to be used as deckName.
+     */
     public CardDeck(int deckNumber) {
         if (deckNumber > 0) {
             deckName = "deck" + deckNumber;
@@ -18,6 +23,11 @@ public class CardDeck {
         }
     }
 
+    /**
+     * Constructor for CardDeck
+     * @param deckNumber the number to be used in deckName.
+     * @param startingDeck Array of Card[] for use as the starting deck.
+     */
     public CardDeck(int deckNumber, Card[] startingDeck) {
         deck.addAll(List.of(startingDeck));
 
@@ -29,6 +39,10 @@ public class CardDeck {
         }
     }
 
+    /**
+     * Method to save the deck state and output its contents to System.out
+     * Should be run on game end.
+     */
     public void endDeck() {
         printStateToFile();
         System.out.println(deckName + " contents: " + Arrays.toString(deck.toArray()));
@@ -45,6 +59,9 @@ public class CardDeck {
         }
     }
 
+    /**
+     * @return Card[], the current contents of the deck.
+     */
     public Object[] getDeck() {
         return deck.toArray();
     }
