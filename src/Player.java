@@ -1,6 +1,7 @@
 import java.util.*;
 import java.lang.Math;
-import java.io.*;
+import java.io.FileWriter;
+import java.io.IOException;
 
 public class Player implements Runnable {
     private final String name;
@@ -9,7 +10,6 @@ public class Player implements Runnable {
     private int preferredValue;
     private final CardDeck giveDeck;
     private final CardDeck takeDeck;
-                                                    // thread?
     private final FileWriter fileWriter;
 
     /**
@@ -122,7 +122,7 @@ public class Player implements Runnable {
 
     /**
      * Print `s` to the file defined in `private final fileWriter`.
-     * @param s String to be writed.
+     * @param s String to be written.
      */
     private void printToFile(String s) {
         try {

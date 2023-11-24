@@ -1,8 +1,8 @@
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.io.*;
-// This will auto wait for new elements to be added
+import java.io.FileWriter;
+import java.io.IOException;
 
 public class CardDeck {
 
@@ -44,11 +44,7 @@ public class CardDeck {
      * Should be run on game end.
      */
     public void endDeck() {
-        printStateToFile();
         System.out.println(deckName + " contents: " + Arrays.toString(deck.toArray()));
-    }
-
-    private void printStateToFile() {
         try {
             FileWriter fileWriter = new FileWriter(String.format("%s_output.txt", deckName));
             fileWriter.write(String.format("%s contents: %s%n", deckName, deck));
@@ -80,7 +76,6 @@ public class CardDeck {
      */
     public Card popCard() throws InterruptedException {
         return deck.take();
-        // return null;
     }
 
     public String getDeckName() {
