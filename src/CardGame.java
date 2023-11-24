@@ -3,66 +3,54 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CardGame {
     private final static AtomicBoolean winnerSelected = new AtomicBoolean(false);
-    private final static ArrayList<Player> players = new ArrayList<Player>();
-    private final static ArrayList<CardDeck> decks = new ArrayList<CardDeck>();
-    private final static ArrayList<Thread> playerThreads = new ArrayList<Thread>();
-    private static Integer playerCount = 4;
+    private final static ArrayList<Player> players = new ArrayList<>();
+    private final static ArrayList<CardDeck> decks = new ArrayList<>();
+    private final static ArrayList<Thread> playerThreads = new ArrayList<>();
+    private static int playerCount;
 
     public static void main(String[] args) {
-        // Integer playerCount = 4;
-        ArrayList<Card> deck; // NOTE: deck and decks. completeDeck may have been better
+        ArrayList<Card> cardPack;
 
         // Getting user input
-        // I recomend just collapsing this in editor
         try (Scanner scanner = new Scanner(System.in)) {
-            System.out.println("Input nothing for defaults");
-
-            // Get playercount from user
-            while (true) {
-                System.out.print("Enter the number of players (4):\n");
-                String input = scanner.nextLine();
-
-                if (input.isEmpty()) {
-                    System.out.printf("Default of %s has been selected.%n", playerCount.toString());
-                    break;
-                }
-
+            do {
+                System.out.print("Enter the number of players: ");
                 try {
-                    playerCount = Integer.parseInt(input);
-                    // System.out.printf("%n%s players", playerCount.toString());
+                    playerCount = scanner.nextInt();
                     if (playerCount < 2) {
-                        System.out.println("\nInvalid input. There must be at least 2 players");
-                    } else {
-                        break;
+                        throw new IllegalArgumentException();
                     }
-                } catch (NumberFormatException e) {
+                }
+                catch (IllegalArgumentException e) {
+                    System.out.println("\nInvalid input. There must be at least 2 players");
+                }
+                catch (Exception e) {
                     System.out.println("\nInvalid input.");
                 }
-            }
+                finally {
+                    scanner.nextLine();
+                }
+            } while (playerCount < 2);
 
             // Get card deck
             while (true) {
-                System.out.print("\nEnter the card deck path (generate):\n");
+                System.out.print("\nEnter the card deck path (leave input blank to generate):\n");
                 String input = scanner.nextLine();
 
                 if (input.isEmpty()) {
                     System.out.println("The card deck will be generated");
 
-                    deck = generateCardDeck(playerCount);
+                    cardPack = generateCardDeck(playerCount);
                     break;
                 }
 
                 try {
-                    deck = cardDeckFromFile(input, playerCount);
+                    cardPack = cardDeckFromFile(input, playerCount);
                     break;
 
                 } catch (FileNotFoundException e) {
@@ -75,30 +63,18 @@ public class CardGame {
             }
         }
 
-        Collections.shuffle(deck);
+        Collections.shuffle(cardPack);
 
         // Generate decks and distribute cards to them
-        int cardIndex = 0;
         for (int deck_i = 1; deck_i <= playerCount; deck_i++) {
-            Card[] startingDeck = {deck.get(cardIndex), deck.get(cardIndex+1), deck.get(cardIndex+2), deck.get(cardIndex+3)};
-            // You can not put Card[] directy into a method for some reason. Hence ^
-            decks.add(new CardDeck(deck_i, startingDeck));
-            cardIndex += 4;
+            decks.add(new CardDeck(deck_i, new Card[] {cardPack.remove(0), cardPack.remove(0), cardPack.remove(0), cardPack.remove(0)}));
         }
 
         // Generate players and distribute cards
         for (int player_i = 1; player_i <= playerCount; player_i++) {
-            if (playerCount.equals(player_i)) { // Last player loops around
-                Card[] startingHand = {deck.get(cardIndex), deck.get(cardIndex+1), deck.get(cardIndex+2), deck.get(cardIndex+3)};
-                players.add(new Player(player_i, decks.getLast(), decks.getFirst(), startingHand));
-                playerThreads.add(new Thread(players.getLast(), players.getLast().getName())); 
-                // ^ Adds players to threads. This is seperate from players so that .getName() can be accessed in the end
-            } else { // All other players
-                Card[] startingHand = {deck.get(cardIndex), deck.get(cardIndex+1), deck.get(cardIndex+2), deck.get(cardIndex+3)};
-                players.add(new Player(player_i, decks.get(player_i-1), decks.get(player_i), startingHand));
-                playerThreads.add(new Thread(players.getLast(), players.getLast().getName()));
-            }
-            cardIndex += 4;
+            Card[] hand = new Card[] {cardPack.remove(0), cardPack.remove(0), cardPack.remove(0), cardPack.remove(0)};
+            players.add(new Player(player_i, decks.get(player_i - 1), decks.get((player_i) % playerCount), hand));
+            playerThreads.add(new Thread(players.getLast(), players.getLast().getName()));
         }
 
 
@@ -126,15 +102,13 @@ public class CardGame {
      */
     private static ArrayList<Card> generateCardDeck(String generatedFilePath, int playerCount) {
         try (FileWriter fileWriter = new FileWriter(generatedFilePath)) {
-            ArrayList<Card> deck = new ArrayList<Card>();
-            for (int face = 1; face <= (2 * playerCount); face++) { // 4 decks + 4 players (2*playercount), each with 4
-                                                                    // cards.
-                for (int card = 1; card <= 4; card++) {
-                    // System.out.println(card + " of face " + face);
-                    fileWriter.write(Integer.toString(face) + "\n");
-                    deck.add(new Card(face));
-                }
+            ArrayList<Card> deck = new ArrayList<>();
+            for (int i = 0; i<(8 * playerCount); i++) {
+                Card card = new Card(new Random().nextInt(playerCount) + 1);
+                deck.add(card);
+                fileWriter.write(card + "\n");
             }
+            fileWriter.close();
             return deck;
         } catch (IOException e) {
             throw new RuntimeException(e);
