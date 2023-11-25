@@ -181,11 +181,11 @@ public class CardGame {
     /**
      * Notifies all players of game end. Returns `true` if `winningPlayer` is the first/actual winner.
      * @param winningPlayer
-     * @return Boolean if `winningPlayer` is the firs winner.
+     * @return Boolean if `winningPlayer` is the first winner.
      */
     public static Boolean endGame(Player winningPlayer) {
         if (winnerSelected.compareAndSet(false, true)) { // Only one player can use this at a time
-            for (int i = 0; i <= players.size()-1; i++) {
+            for (int i = 0; i < players.size(); i++) {
 
                 Player player = players.get(i);
                 playerThreads.get(i).interrupt();

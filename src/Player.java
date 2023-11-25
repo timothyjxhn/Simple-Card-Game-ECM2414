@@ -47,7 +47,7 @@ public class Player implements Runnable {
     @Override
     public void run() {
         System.out.printf("%s has started with a hand of %s %n", name, Arrays.toString(hand));
-        while (!Thread.currentThread().isInterrupted()) { // !stopRequested
+        while (true) {
             if (isWinningHand()) {
                 String win = String.format("%s has won%n", name);
                 printToFile(win);
@@ -63,8 +63,10 @@ public class Player implements Runnable {
                     System.out.print(win);
                     printToFile(win);
                 }
-                    break;
-            } else {
+
+                break;
+            }
+            else {
                 // Take card
                 try {
                     Card takenCard = takeDeck.popCard();
@@ -80,9 +82,6 @@ public class Player implements Runnable {
                                                                                                         // is [1, 4, 2,
                                                                                                         // 1]
                 } catch (InterruptedException e) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        System.out.println(name + " got interrupted while waiting to take a card\n" + e);
-                    }
                     break;
                 }
             }
