@@ -45,14 +45,13 @@ public class CardGame {
                 if (input.isEmpty()) {
                     System.out.println("The card deck will be generated");
 
-                    cardPack = generateCardDeck(playerCount);
+                    cardPack = generateCardPack(playerCount);
                     break;
                 }
 
                 try {
                     cardPack = cardDeckFromFile(input, playerCount);
                     break;
-
                 } catch (FileNotFoundException e) {
                     System.out.println("\nInvalid input. The file could not be found:\n" + e);
                 } catch (FileNotDeckException e) {
@@ -65,16 +64,28 @@ public class CardGame {
 
         Collections.shuffle(cardPack);
 
-        // Generate decks and distribute cards to them
+        // Generate decks
         for (int deck_i = 1; deck_i <= playerCount; deck_i++) {
-            decks.add(new CardDeck(deck_i, new Card[] {cardPack.remove(0), cardPack.remove(0), cardPack.remove(0), cardPack.remove(0)}));
+            decks.add(new CardDeck(deck_i));
         }
 
         // Generate players and distribute cards
         for (int player_i = 1; player_i <= playerCount; player_i++) {
             Card[] hand = new Card[] {cardPack.remove(0), cardPack.remove(0), cardPack.remove(0), cardPack.remove(0)};
-            players.add(new Player(player_i, decks.get(player_i - 1), decks.get((player_i) % playerCount), hand));
+            players.add(new Player(player_i, decks.get((player_i) % playerCount), decks.get(player_i - 1), hand));
             playerThreads.add(new Thread(players.getLast(), players.getLast().getName()));
+        }
+
+        // Distribute remaining cards to decks
+        int index = 0;
+        while (!cardPack.isEmpty()) {
+            try {
+                decks.get(index).pushCard(cardPack.remove(0));
+            }
+            catch (InterruptedException ignored) { }
+            finally {
+                index = (index + 1) % playerCount;
+            }
         }
 
 
@@ -90,17 +101,17 @@ public class CardGame {
      * @param playerCount
      * @return An ArrayList of Cards.
      */
-    private static ArrayList<Card> generateCardDeck(int playerCount) {
-        return generateCardDeck("./generated-deck.txt", playerCount);
+    private static ArrayList<Card> generateCardPack(int playerCount) {
+        return generateCardPack("./generated-deck.txt", playerCount);
     }
 
     /**
-     * Generates a deck for provided playerCount, saves it in generatidFilePath.
+     * Generates a deck for provided playerCount, saves it in generatedFilePath.
      * @param generatedFilePath
      * @param playerCount
      * @return An ArrayList of Cards, the deck.
      */
-    private static ArrayList<Card> generateCardDeck(String generatedFilePath, int playerCount) {
+    protected static ArrayList<Card> generateCardPack(String generatedFilePath, int playerCount) {
         try (FileWriter fileWriter = new FileWriter(generatedFilePath)) {
             ArrayList<Card> deck = new ArrayList<>();
             for (int i = 0; i<(8 * playerCount); i++) {
@@ -108,7 +119,6 @@ public class CardGame {
                 deck.add(card);
                 fileWriter.write(card + "\n");
             }
-            fileWriter.close();
             return deck;
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -125,7 +135,7 @@ public class CardGame {
      * @throws FileNotDeckException The provided file was not a valid deck (for provided playerCount).
      * @throws IOException
      */
-    private static ArrayList<Card> cardDeckFromFile(String path, Integer playerCount)
+    protected static ArrayList<Card> cardDeckFromFile(String path, Integer playerCount)
             throws FileNotFoundException, FileNotDeckException, IOException {
         try (BufferedReader reader = new BufferedReader(new FileReader(path))) { // The try will close reader
             String currentLine;
@@ -190,7 +200,6 @@ public class CardGame {
             }
 
             return true;
-
         } else {
             return false;
         }

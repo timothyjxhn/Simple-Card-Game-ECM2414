@@ -98,13 +98,6 @@ public class Player implements Runnable {
     }
 
     /**
-     * @return int, The current preferred value
-     */
-    public int getPreferredValue() {
-        return preferredValue;
-    }
-
-    /**
      * @return String, the current name
      */
     public String getName() {
