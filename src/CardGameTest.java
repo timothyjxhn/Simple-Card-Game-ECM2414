@@ -9,7 +9,7 @@ public class CardGameTest {
 
     @BeforeClass
     public static void setUp() {
-        testFiles = new String[]{"testPack(5)(40).txt", "testPack(6)(48).txt", "testPack(string).txt"};
+        testFiles = new String[]{"testPack(5)(40).txt", "testPack(string).txt"};
         for (String testFile : testFiles) {
             if (!new File(testFile).exists()) {
                 throw new RuntimeException("Test file " + testFile + " does not exist");
@@ -57,7 +57,7 @@ public class CardGameTest {
     @Test
     public void testCardDeckFromFileWrongSize() {
         try {
-            CardGame.cardDeckFromFile(testFiles[1], 20);
+            CardGame.cardDeckFromFile(testFiles[0], 20);
             fail("Test failed due to exception: FileNotDeckException not thrown");
         }
         catch (FileNotDeckException e) {
@@ -71,10 +71,24 @@ public class CardGameTest {
     @Test
     public void testCardDeckFromFileIncludesStrings() {
         try {
-            CardGame.cardDeckFromFile(testFiles[2], 5);
+            CardGame.cardDeckFromFile(testFiles[1], 5);
             fail("Test failed due to exception: FileNotDeckException not thrown");
         }
         catch (FileNotDeckException e) {
+            assertTrue(true);
+        }
+        catch (Exception e) {
+            fail("Test failed due to exception: " + e);
+        }
+    }
+
+    @Test
+    public void testInputWrongFilePath() {
+        try {
+            CardGame.cardDeckFromFile("wrongPath.txt", 5);
+            fail("Test failed due to exception: FileNotFoundException not thrown");
+        }
+        catch (FileNotFoundException e) {
             assertTrue(true);
         }
         catch (Exception e) {
