@@ -6,18 +6,20 @@ import java.io.IOException;
 
 public class CardDeck {
 
-    private final LinkedBlockingQueue<Card> deck = new LinkedBlockingQueue<>();
+    private final LinkedBlockingQueue<Card> deck;
     private final String deckName;
 
     /**
      * Constructor for deckNumber. 
-     * Note: you will do not NEED to provide startingDeck.
+     * Note: you do not NEED to provide startingDeck.
      * @param deckNumber the number to be used as deckName.
      */
     public CardDeck(int deckNumber) {
+        deck = new LinkedBlockingQueue<>();
+        
         if (deckNumber > 0) {
             deckName = "deck" + deckNumber;
-            System.out.println(deckName + " initial contents: " + Arrays.toString(deck.toArray()));
+            // System.out.println(deckName + " initial contents: " + Arrays.toString(deck.toArray()));
         } else {
             throw new IllegalArgumentException("deckNumber must be >=1");
         }
@@ -29,6 +31,7 @@ public class CardDeck {
      * @param startingDeck Array of Card[] for use as the starting deck.
      */
     public CardDeck(int deckNumber, Card[] startingDeck) {
+        deck = new LinkedBlockingQueue<>();
         deck.addAll(List.of(startingDeck));
 
         if (deckNumber > 0) {
@@ -45,10 +48,8 @@ public class CardDeck {
      */
     public void endDeck() {
         System.out.println(deckName + " contents: " + Arrays.toString(deck.toArray()));
-        try {
-            FileWriter fileWriter = new FileWriter(String.format("%s_output.txt", deckName));
+        try (FileWriter fileWriter = new FileWriter(String.format("%s_output.txt", deckName))) {
             fileWriter.write(String.format("%s contents: %s%n", deckName, deck));
-            fileWriter.close();
         }
         catch (IOException e) {
             throw new RuntimeException(e);

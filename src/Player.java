@@ -13,12 +13,13 @@ public class Player implements Runnable {
     private final FileWriter fileWriter;
 
     /**
-     * Constructor for Player. Note: when using this you need to later privide a starting deck for it to be run().
+     * Constructor for Player.
      * @param preferredValue int for an initial preferred value.
      * @param giveDeck A CardDeck that cards will be given too.
      * @param takeDeck CardDeck that cards will be taken from.
+     * @param startingHand An array of Card[] that will be used as the starting hand.
      */
-    public Player(int preferredValue, CardDeck giveDeck, CardDeck takeDeck) {
+    public Player(int preferredValue, CardDeck giveDeck, CardDeck takeDeck, Card[] startingHand) {
         if (preferredValue < 1) {
             throw new IllegalArgumentException("preferredValue must be > 0");
         }
@@ -30,26 +31,16 @@ public class Player implements Runnable {
         this.giveDeck = giveDeck;
         this.takeDeck = takeDeck;
 
+        if (startingHand.length > capacity) {
+            throw new IllegalArgumentException("startingHand must be or less than " + capacity);
+        }
+        System.arraycopy(startingHand, 0, hand, 0, startingHand.length);
+
         try {
             fileWriter = new FileWriter(String.format("player%d_output.txt", preferredValue));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    /**
-     * Constructor for Player.
-     * @param preferredValue int for an initial preferred value.
-     * @param giveDeck A CardDeck that cards will be given too.
-     * @param takeDeck CardDeck that cards will be taken from.
-     * @param startingHand An array of Card[] that will be used as the starting hand.
-     */
-    public Player(int preferredValue, CardDeck giveDeck, CardDeck takeDeck, Card[] startingHand) {
-        this(preferredValue, giveDeck, takeDeck);
-        if (startingHand.length > capacity) {
-            throw new IllegalArgumentException("startingHand must be or less than " + capacity);
-        }
-        System.arraycopy(startingHand, 0, hand, 0, startingHand.length);
         printToFile(String.format("%s initial hand %s%n", name, Arrays.toString(hand)));
     }
 
@@ -127,6 +118,17 @@ public class Player implements Runnable {
     private void printToFile(String s) {
         try {
             fileWriter.write(s);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Closes the FileWriter.
+     */
+    public void closeWriter() {
+        try {
+            fileWriter.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
