@@ -115,10 +115,11 @@ public class CardGame {
     protected static ArrayList<Card> generateCardPack(String generatedFilePath, int playerCount) {
         try (FileWriter fileWriter = new FileWriter(generatedFilePath)) {
             ArrayList<Card> deck = new ArrayList<>();
-            for (int i = 0; i<(8 * playerCount); i++) {
-                Card card = new Card(new Random().nextInt(playerCount) + 1);
-                deck.add(card);
-                fileWriter.write(card + "\n");
+            for (int i = 1; i<=(2.25 * playerCount); i++) {
+                for (int j = 0; j<4; j++) {
+                    deck.add(new Card(i));
+                    fileWriter.write(i + "\n");
+                }
             }
             return deck;
         } catch (IOException e) {
