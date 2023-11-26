@@ -101,6 +101,13 @@ public class Player implements Runnable {
     }
 
     /**
+     * @return int, the current preferred value
+     */
+    public int getPreferredValue() {
+        return preferredValue;
+    }
+
+    /**
      * Print `s` to the file defined in `private final fileWriter`.
      * @param s String to be written.
      */

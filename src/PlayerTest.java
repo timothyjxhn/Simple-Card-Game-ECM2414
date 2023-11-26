@@ -3,6 +3,8 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.io.FileReader;
+import java.util.LinkedHashMap;
+import java.util.Set;
 
 public class PlayerTest {
 
@@ -89,7 +91,7 @@ public class PlayerTest {
     public void testSwapCardKeepsPreferred() {
         player = new Player(1, null, null, cardsLose3);
         Card card = player.swapCard(new Card(1));
-        assertNotEquals(3, card.value());
+        assertTrue(3 != card.value() && 1 != card.value());
     }
 
     @Test
@@ -121,5 +123,43 @@ public class PlayerTest {
     public void testIsNotWinningHand2() {
         player = new Player(2, null, null, cardsLose5);
         assertFalse(player.isWinningHand());
+    }
+
+    @Test
+    public void testSortedHashMap() {
+        player = new Player(1, null, null, cardsLose5);
+        try {
+            Method sortedHashMap = Player.class.getDeclaredMethod("sortedHashMap", Card[].class);
+            sortedHashMap.setAccessible(true);
+            LinkedHashMap<Card, Integer> cardMap = (LinkedHashMap<Card, Integer>) sortedHashMap.invoke(player, (Object) cardsLose5);
+
+            assertEquals(3, (int) cardMap.get(new Card(3)));
+            assertEquals(1, (int) cardMap.get(new Card(1)));
+
+            Object[] keys = cardMap.keySet().toArray();
+            assertEquals(new Card(1), keys[0]);
+            assertEquals(new Card(3), keys[1]);
+        }
+        catch (Exception e) {
+            fail("Could not run test due to: " + e);
+        }
+    }
+
+    @Test
+    public void testChangePrefValue() {
+        player = new Player(1, null, null, cardsLose5);
+        assertEquals(1, player.getPreferredValue());
+        try {
+            Method sortedHashMap = Player.class.getDeclaredMethod("sortedHashMap", Card[].class);
+            sortedHashMap.setAccessible(true);
+            LinkedHashMap<Card, Integer> cardMap = (LinkedHashMap<Card, Integer>) sortedHashMap.invoke(player, (Object) cardsLose5);
+            Method changePrefValue = Player.class.getDeclaredMethod("setPrefValIfNeeded", LinkedHashMap.class, int.class);
+            changePrefValue.setAccessible(true);
+            changePrefValue.invoke(player, cardMap, 2);
+
+            assertEquals(3, player.getPreferredValue());
+        } catch (Exception e) {
+            fail("Could not run test due to: " + e);
+        }
     }
 }
