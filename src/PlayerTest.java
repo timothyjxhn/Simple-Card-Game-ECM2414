@@ -4,7 +4,6 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.io.FileReader;
 import java.util.LinkedHashMap;
-import java.util.Set;
 
 public class PlayerTest {
 
@@ -127,11 +126,10 @@ public class PlayerTest {
 
     @Test
     public void testSortedHashMap() {
-        player = new Player(1, null, null, cardsLose5);
         try {
             Method sortedHashMap = Player.class.getDeclaredMethod("sortedHashMap", Card[].class);
             sortedHashMap.setAccessible(true);
-            LinkedHashMap<Card, Integer> cardMap = (LinkedHashMap<Card, Integer>) sortedHashMap.invoke(player, (Object) cardsLose5);
+            LinkedHashMap<Card, Integer> cardMap = (LinkedHashMap<Card, Integer>) sortedHashMap.invoke(null, (Object) cardsLose5);
 
             assertEquals(3, (int) cardMap.get(new Card(3)));
             assertEquals(1, (int) cardMap.get(new Card(1)));

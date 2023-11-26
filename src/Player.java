@@ -172,7 +172,7 @@ public class Player implements Runnable {
      * @param hand: Array of cards to be weighed and sorted.
      * @return A LinkedHashMap sorted by integer value.
      */
-    private LinkedHashMap<Card, Integer> sortedHashMap(Card[] hand) {
+    private static LinkedHashMap<Card, Integer> sortedHashMap(Card[] hand) {
         HashMap<Card, Integer> cardMap = new HashMap<>(hand.length);
         for (Card handCard : hand) {
             if (cardMap.containsKey(handCard)) {
