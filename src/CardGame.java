@@ -72,8 +72,9 @@ public class CardGame {
         // Generate players and distribute cards
         for (int player_i = 1; player_i <= playerCount; player_i++) {
             Card[] hand = new Card[] {cardPack.remove(0), cardPack.remove(0), cardPack.remove(0), cardPack.remove(0)};
-            players.add(new Player(player_i, decks.get((player_i) % playerCount), decks.get(player_i - 1), hand));
-            playerThreads.add(new Thread(players.getLast(), players.getLast().getName()));
+            Player player = new Player(player_i, decks.get((player_i) % playerCount), decks.get(player_i - 1), hand);
+            players.add(player);
+            playerThreads.add(new Thread(player, player.getName()));
         }
 
         // Distribute remaining cards to decks
