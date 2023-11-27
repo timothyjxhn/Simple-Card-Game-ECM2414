@@ -12,7 +12,7 @@ Make sure you have the following installed:
 - Hamcrest 1.3 ([download](https://repo1.maven.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar))
 
 ## Run from source code
-Code is run through `$ java CardGame.java`.
+Code is run through `$ java CardGame`.
 
 Once run it will ask for the number of players and input card deck. There is the option of defaults (via inputting nothing).
 ## Compile from source code

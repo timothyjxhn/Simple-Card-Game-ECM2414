@@ -28,6 +28,7 @@ replay_pid*
 
 # Generated files 
 src/generated-deck.txt
+generated-deck.txt
 *_output.txt
 
 # Test files
