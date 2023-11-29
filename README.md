@@ -24,11 +24,11 @@ $ javac CardGame.java CardDeck.java Player.java Card.java
 ```
 3. Run this command to generate JAR file:
 ```
-$ jar cfm SimpleCardGame.jar META-INF/MANIFEST.MF *.class
+$ jar cfm cards.jar META-INF/MANIFEST.MF *.class
 ```
 4. Run JAR file with:
 ```
-$ java -jar SimpleCardGame.jar
+$ java -jar cards.jar
 ```
 
 ## Tests
