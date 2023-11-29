@@ -208,6 +208,7 @@ public class CardGame {
     }
 }
 
+@SuppressWarnings("serial")
 class FileNotDeckException extends Exception {
     /**
      * Custom error constructor for invalid deck files.
